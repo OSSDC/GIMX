@@ -188,6 +188,27 @@ print ("UDP target port:", UDP_PORT)
 sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
 
+# byte array conversion methods
+
+def intToBytes(n,b,offset):
+    #b = bytearray([0, 0, 0, 0])   # init
+    b[offset+0] = n & 0xFF
+    n >>= 8
+    b[offset+1] = n & 0xFF
+    n >>= 8
+    b[offset+2] = n & 0xFF
+    n >>= 8
+    b[offset+3] = n & 0xFF    
+    
+    # Return the result or as bytearray or as bytes (commented out)
+    ##return bytes(b)  # uncomment if you need
+    #return b
+    
+    
+def bytesToInt(b, offset):
+    n = (b[offset+3]<<24) + (b[offset+2]<<16) + (b[offset+1]<<8) + b[offset+0]
+    return n
+
 def sendRecv(message):
     global sock,UDP_IP,UDP_PORT
     sock.sendto(message, (UDP_IP, UDP_PORT))
@@ -198,17 +219,18 @@ def sendRecv(message):
 
 def send(message):
     global sock,UDP_IP,UDP_PORT
+    print("send message")
     sock.sendto(message, (UDP_IP, UDP_PORT))
 
 def update(KEY,on,value):
     global MESSAGE
     if on:
-        if MESSAGE[2+KEY*4] != value:
-            MESSAGE[2+KEY*4] = value
+        if bytesToInt(MESSAGE, 2+KEY*4) != value:
+            intToBytes(value,MESSAGE,2+KEY*4)
             send(MESSAGE)
     else:
-        if MESSAGE[2+KEY*4] != 0:
-            MESSAGE[2+KEY*4] = 0
+        if bytesToInt(MESSAGE, 2+KEY*4) != 0:
+            intToBytes(0,MESSAGE,2+KEY*4)
             send(MESSAGE)
 
 pygame.init()
@@ -235,20 +257,20 @@ def sendEvent(key, state):
     elif key == K_DOWN:
         print("down")
         update(DOWN,state,255)
-    elif key == K_LEFT:
+    elif key == K_a:
         print("left")
         update(LEFT,state,255)
-    elif key == K_RIGHT:
+    elif key == K_d:
         print("right")
         update(RIGHT,state,255)
-    elif key == K_LCTRL:
-        print("K_LCTRL")
+    elif key == K_s:
+        print("K_s")
         update(TRIANGLE,state,255)
-    elif key == K_z:
-        print("K_LCTRL")
+    elif key == K_SPACE:
+        print("K_SPACE")
         update(SQUARE,state,255)
-    elif key == K_LALT:
-        print("K_LALT")
+    elif key == K_w:
+        print("K_w")
         update(CROSS,state,255)
     elif key == K_ESCAPE:
         print("K_ESCAPE")
@@ -256,6 +278,30 @@ def sendEvent(key, state):
     elif key == K_b:
         print("K_b")
         update(CIRCLE,state,255)
+    elif key == K_LESS:
+        print("K_<")
+        update(L2,state,255)
+    elif key == K_GREATER:
+        print("K_>")
+        update(R2,state,255)
+    elif key == K_LEFTBRACKET:
+        print("K_[]")
+        update(LEFT_STICK_X,state,-126)
+    elif key == K_RIGHTBRACKET:
+        print("K_]")
+        update(LEFT_STICK_X,state,126)
+    elif key == K_o:
+        print("K_0")
+        update(RIGHT_STICK_Y,state,-126)
+    elif key == K_l:
+        print("K_l")
+        update(RIGHT_STICK_Y,state,126)
+    elif key == K_LALT:
+        print("K_LALT")
+        update(L2,state,255)
+    elif key == K_RALT:
+        print("K_RALT")
+        update(R2,state,255)
 
 while True:
     for event in pygame.event.get():
