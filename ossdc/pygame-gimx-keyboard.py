@@ -32,7 +32,8 @@ L2 =21 #l2 [0, 255]
 R2 =22 #r2 [0, 255] 
 L3 =23 #l3 [0, 255] 
 R3 =24 #r3 [0, 255] 
-    
+
+codeToString = ["LEFT_STICK_X","LEFT_STICK_Y","RIGHT_STICK_X","RIGHT_STICK_Y","ACC_X","ACC_Y","ACC_Z","GYRO","SELECT","START","PS","UP","RIGHT","DOWN","LEFT","TRIANGLE","CIRCLE","CROSS","SQUARE","L1","R1","L2","R2","L3","R3"]
 
 '''
 KeyASCII      ASCII   Common Name
@@ -214,23 +215,27 @@ def sendRecv(message):
     sock.sendto(message, (UDP_IP, UDP_PORT))
     #while True:
     data, addr = sock.recvfrom(4192) # buffer size is 1024 bytes
-    print ("received message:", data)
+    #print ("received message:", data)
     return data
 
 def send(message):
     global sock,UDP_IP,UDP_PORT
-    print("send message")
+    #print("send message")
     sock.sendto(message, (UDP_IP, UDP_PORT))
 
 def update(KEY,on,value):
-    global MESSAGE
+    global MESSAGE,prevTime
     if on:
         if bytesToInt(MESSAGE, 2+KEY*4) != value:
             intToBytes(value,MESSAGE,2+KEY*4)
+            print("update("+str(time.time()-prevTime)+", "+codeToString[KEY]+", "+str(value)+")")
+            prevTime = time.time()
             send(MESSAGE)
     else:
         if bytesToInt(MESSAGE, 2+KEY*4) != 0:
             intToBytes(0,MESSAGE,2+KEY*4)
+            print("update("+str(time.time()-prevTime)+", "+codeToString[KEY]+", "+str(0)+")")
+            prevTime = time.time()
             send(MESSAGE)
 
 pygame.init()
@@ -248,59 +253,67 @@ MESSAGE = bytearray(157)
 MESSAGE[0]=0xff
 MESSAGE[1]=0x9c
 
+prevTime = time.time()
+
 #key=None
 
 def sendEvent(key, state):
     if key == K_UP:
-        print("up")
+        #print("up")
         update(UP,state,255)
     elif key == K_DOWN:
-        print("down")
+        #print("down")
         update(DOWN,state,255)
     elif key == K_a:
-        print("left")
+        #print("left")
         update(LEFT,state,255)
     elif key == K_d:
-        print("right")
+        #print("right")
         update(RIGHT,state,255)
     elif key == K_s:
-        print("K_s")
+        #print("K_s")
         update(TRIANGLE,state,255)
     elif key == K_SPACE:
-        print("K_SPACE")
+        #print("K_SPACE")
         update(SQUARE,state,255)
     elif key == K_w:
-        print("K_w")
+        #print("K_w")
         update(CROSS,state,255)
     elif key == K_ESCAPE:
-        print("K_ESCAPE")
+        #print("K_ESCAPE")
         update(PS,state,255)
     elif key == K_b:
-        print("K_b")
+        #print("K_b")
         update(CIRCLE,state,255)
+    elif key == K_c:
+        #print("K_c")
+        update(R1,state,255)
+    elif key == K_v:
+        #print("K_v")
+        update(L1,state,255)
     elif key == K_LESS:
-        print("K_<")
+        #print("K_<")
         update(L2,state,255)
     elif key == K_GREATER:
-        print("K_>")
+        #print("K_>")
         update(R2,state,255)
     elif key == K_LEFTBRACKET:
-        print("K_[]")
+        #print("K_[]")
         update(LEFT_STICK_X,state,-126)
     elif key == K_RIGHTBRACKET:
-        print("K_]")
+        #print("K_]")
         update(LEFT_STICK_X,state,126)
     elif key == K_o:
-        print("K_0")
+        #print("K_0")
         update(RIGHT_STICK_Y,state,-126)
     elif key == K_l:
-        print("K_l")
+        #print("K_l")
         update(RIGHT_STICK_Y,state,126)
     elif key == K_LALT:
-        print("K_LALT")
+        #print("K_LALT")
         update(L2,state,255)
     elif key == K_RALT:
-        print("K_RALT")
+        #print("K_RALT")
         update(R2,state,255)
 
 while True:
